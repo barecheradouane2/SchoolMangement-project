@@ -1,0 +1,5 @@
+ring-[1.5]  = border
+search bar ring-gray-300
+text-xs
+bg-trasparnt =no background color
+bg-purple-500
