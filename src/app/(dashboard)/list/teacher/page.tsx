@@ -9,6 +9,8 @@ import {teachersData} from  "@/lib/data";
 import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
+import FormModal from "@/components/FormModal";
+
 const TeacherListPage = () => {
 
     const columns =[
@@ -84,13 +86,13 @@ const TeacherListPage = () => {
             <td>{
                ( role=="admin") && (
                 <div className="flex items-center gap-2">
-                    <Link href={`/list/teachers/${item.id}`}>
-                    <button className="rounded-full w-6 h-6 bg-lamaSky flex items-center justify-between p-2">
+                    <Link href={`/list/teacher/${item.id}`}>
+                    <button className="rounded-full w-7 h-7 bg-lamaSky flex items-center justify-between p-2">
                         <Image className="
-                        " src="/view.png" alt="view" width={18} height={18}/>
+                        " src="/update.png" alt="view" width={18} height={18}/>
                     </button>
                     </Link>
-                      <button className="rounded-full w-6 h-6  bg-lamaPurple flex items-center justify-between p-2">
+                      <button className="rounded-full w-7 h-7  bg-lamaPurple flex items-center justify-between p-2 ">
                         <Image src="/delete.png" alt="delete"width={18} height={18}/>
                     </button>
 
@@ -121,11 +123,9 @@ const TeacherListPage = () => {
                         <Image src="/sort.png" alt="logo" width={14} height={14} />
 
                     </button>
-                     <button className="bg-lamaYellow p-2 rounded-full flex items-center justify-between">
-                        <Image src="/plus.png" alt="logo" width={14} height={14} />
-
-                    </button>
-               
+                   
+                   <FormModal table="teacher" type="create" />
+                
                   
 
                 </div>
