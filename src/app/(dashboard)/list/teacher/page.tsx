@@ -4,14 +4,30 @@ import Image from "next/image";
 import  TableList from "@/components/TableList"
 import { role } from "@/lib/data";
 
-import {teachersData} from  "@/lib/data";
+// import {teachersData} from  "@/lib/data";
 
 import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
 import FormModal from "@/components/FormModal";
+import { Class, Subject, Teacher } from "@prisma/client";
+import prisma from "@/lib/prisma";
+import { useSearchParams } from "next/navigation";
 
-const TeacherListPage = () => {
+
+
+import { pageSize } from "@/lib/settings";
+import { count } from "console";
+
+
+
+
+
+const TeacherListPage =  async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) => {
 
     const columns =[
         {
@@ -53,24 +69,16 @@ const TeacherListPage = () => {
 
     ]
 
-    type Teacher={
-        id:number,
-        teacherId:number,
-        name:string,
-        email?:string,
-        photo:string,
-        phone:string,
-        subjects:string [],
-        classes:string [],
-        address:string,
-        
+   
 
-    }
+    type TeacherType=  Teacher  & {subjects:Subject []} & {classes :Class []}
 
-    const renderRow =(item :Teacher) =>(
+  
+
+    const renderRow =(item :TeacherType) =>(
         <tr key={item.id} className="py-4 even:bg-slate-100 hover:bg-lamaPurple hover:cursor-pointer">
             <td className=" flex items-center gap-4 py-1">
-                 <Image src={item.photo} alt="photo"  className=" hidden w-8 h-8 md:flex rounded-full" width={14} height={14} />
+                 <Image src={item.img || "/noAvatar.png"} alt="photo"  className=" hidden w-8 h-8 md:flex rounded-full" width={14} height={14} />
 
                  <div className="flex flex-col " >
                     <p className="font-semibold text-sm ">{item.name}</p>
@@ -78,9 +86,10 @@ const TeacherListPage = () => {
 
                  </div>
             </td>
-            <td className="hidden md:table-cell text-sm">{item.teacherId}</td>
-            <td className="hidden md:table-cell text-sm">{item.subjects.join(",")}</td>
-            <td className="hidden md:table-cell text-sm">{item.classes.join(",")}</td>
+            
+            <td className="hidden md:table-cell text-sm">{item.username}</td>
+            <td className="hidden md:table-cell text-sm">{item.subjects.map(j => j.name).join(",")}</td>
+            <td className="hidden md:table-cell text-sm">{item.classes.map(c => c.name).join(", ")}</td>
             <td className="hidden md:table-cell text-sm">{item.phone}</td>
             <td className="hidden md:table-cell text-sm">{item.address}</td>
             <td>{
@@ -102,6 +111,73 @@ const TeacherListPage = () => {
 
         </tr>
 )
+
+
+
+
+  const {page,...queryParams} =searchParams;
+
+
+
+ const where: any = {};
+
+for (const [key, value] of Object.entries(queryParams)) {
+  if (!value) continue;
+
+  if(key==="name") {
+    where.OR = [
+      { name: { contains: value, mode: "insensitive" } },
+      { email: { contains: value, mode: "insensitive" } },
+      { username: { contains: value, mode: "insensitive" } },
+    ];
+  
+  }else if (key === "classid") {
+    where.classes = {
+      some: { id:  parseInt(value) }
+    };
+  } else if (key === "subjectid") {
+    where.subjects = {
+      some: { id:  parseInt(value) }
+    };
+  } else {
+    where[key] = value;
+  }
+}
+
+  
+
+  
+
+  const  p = page ? parseInt(page) : 1;
+
+
+
+
+const [teachersData,teachercount]= await prisma.$transaction([
+    prisma.teacher.findMany({
+        include: {
+            subjects: true,
+            classes: true,
+        },
+        where,
+        take: pageSize ,
+        skip: (p - 1) * pageSize,
+       
+    }),
+    prisma.teacher.count()
+])
+
+const totalPages = Math.ceil(teachercount / pageSize);
+
+console.log("hello world what the problem")
+
+
+
+
+
+
+
+
 
 
 
@@ -136,7 +212,7 @@ const TeacherListPage = () => {
          <TableList columns={columns} renderRow={renderRow}  data={teachersData}/>
          {/* bottom */}
          
-         <Pagination />
+         <Pagination  totalPages={totalPages} page={p}   />
     </div>
   )
 }
