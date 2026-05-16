@@ -6,9 +6,19 @@ import { role } from "@/lib/data";
 
 import {parentsData} from  "@/lib/data";
 
+import { Parent ,Student} from "@prisma/client";
+
 import Link from "next/link";
 import Pagination from "@/components/Pagination";
-const ParentListPage = () => {
+
+import prisma from "@/lib/prisma";
+import { pageSize } from "@/lib/settings";
+
+const ParentListPage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) => {
        const columns =[
             {
                header :"Info",
@@ -38,15 +48,8 @@ const ParentListPage = () => {
         }
     
         ]
-        type Parent ={
-            id:number,
-             name:string,
-            students:string[],
-            email?:string,
-            phone:string,
-            address:string,
-        }
-          const renderRow =(item :Parent) =>(
+        type ParentType = Parent  & {students:Student []};
+          const renderRow =(item :ParentType) =>(
             <tr key={item.id} className="py-4 even:bg-slate-100 hover:bg-lamaPurple hover:cursor-pointer">
                 <td className=" flex items-center gap-4 py-1">
                     
@@ -57,7 +60,7 @@ const ParentListPage = () => {
     
                      </div>
                 </td>
-                <td className="hidden md:table-cell text-sm">{item.students.join(",")}</td>
+                <td className="hidden md:table-cell text-sm">{item.students.map(j => j.name).join(",")}</td>
                 
                 <td className="hidden md:table-cell text-sm">{item.phone}</td>
               
@@ -81,6 +84,62 @@ const ParentListPage = () => {
     
             </tr>
     )
+
+     const {page,...queryParams} =searchParams;
+
+
+
+ const where: any = {};
+
+for (const [key, value] of Object.entries(queryParams)) {
+  if (!value) continue;
+
+  if(key==="name") {
+    where.OR = [
+      { name: { contains: value, mode: "insensitive" } },
+      { email: { contains: value, mode: "insensitive" } },
+      { username: { contains: value, mode: "insensitive" } },
+    ];
+  
+  }if (key === "studentid") {
+    where.students = {
+      some: { id:  parseInt(value) }
+    };
+  } else {
+    where[key] = value;
+  }
+}
+
+  
+
+  
+
+  const  p = page ? parseInt(page) : 1;
+
+
+
+
+const [parentsData,parentcount]= await prisma.$transaction([
+    prisma.parent.findMany({
+        include: {
+            students: true,
+        },
+        where,
+        take: pageSize ,
+        skip: (p - 1) * pageSize,
+       
+    }),
+    prisma.parent.count()
+])
+
+const totalPages = Math.ceil(parentcount / pageSize);
+
+
+
+
+
+
+
   return (
     <div className='bg-white m-4 p-4'>
         {/* top */}
@@ -113,7 +172,7 @@ const ParentListPage = () => {
          <TableList columns={columns} renderRow={renderRow}  data={parentsData}/>
          {/* bottom */}
          
-         <Pagination />
+         <Pagination  totalPages={totalPages} page={p} />
     </div>
   )
 }

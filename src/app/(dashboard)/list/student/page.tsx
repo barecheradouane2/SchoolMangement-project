@@ -6,10 +6,19 @@ import { role } from "@/lib/data";
 
 import {studentsData} from  "@/lib/data";
 
+import { Student } from "@prisma/client";
+
 import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
-const StudentListPage = () => {
+import prisma from "@/lib/prisma";
+import { pageSize } from "@/lib/settings";
+
+const StudentListPage = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) => {
      const columns =[
         {
            header :"Info",
@@ -55,7 +64,12 @@ const StudentListPage = () => {
         class:string ,
         address:string,
     }
-      const renderRow =(item :Student) =>(
+
+    type StudentType= Student;
+
+
+
+      const renderRow =(item :StudentType) =>(
         <tr key={item.id} className="py-4 even:bg-slate-100 hover:bg-lamaPurple hover:cursor-pointer">
             <td className=" flex items-center gap-4 py-1">
                  <Image src={item.photo} alt="photo"  className=" hidden w-8 h-8 md:flex rounded-full" width={14} height={14} />
@@ -66,7 +80,7 @@ const StudentListPage = () => {
 
                  </div>
             </td>
-            <td className="hidden md:table-cell text-sm">{item.studentId}</td>
+            <td className="hidden md:table-cell text-sm">{item.id}</td>
             <td className="hidden md:table-cell text-sm">{item.grade}</td>
             <td className="hidden md:table-cell text-sm">{item.phone}</td>
           
@@ -90,6 +104,58 @@ const StudentListPage = () => {
 
         </tr>
 )
+
+  const {page,...queryParams} =searchParams;
+
+
+
+ const where: any = {};
+
+for (const [key, value] of Object.entries(queryParams)) {
+  if (!value) continue;
+
+  if(key==="name") {
+    where.OR = [
+      { name: { contains: value, mode: "insensitive" } },
+      { email: { contains: value, mode: "insensitive" } },
+      { username: { contains: value, mode: "insensitive" } },
+    ];
+  
+  }else if (key === "classid") {
+    where.classes = {
+      some: { id:  parseInt(value) }
+    };
+  }  else {
+    where[key] = value;
+  }
+}
+
+  
+
+  
+
+  const  p = page ? parseInt(page) : 1;
+
+
+  const [studentsData,studentcount]= await prisma.$transaction([
+    prisma.student.findMany({
+       
+        where,
+        take: pageSize ,
+        skip: (p - 1) * pageSize,
+       
+    }),
+    prisma.student.count()
+])
+
+const totalPages = Math.ceil(studentcount / pageSize);
+
+
+
+
+
+
+
   return (
      <div className='bg-white m-4 p-4'>
         {/* top */}
@@ -122,7 +188,7 @@ const StudentListPage = () => {
          <TableList columns={columns} renderRow={renderRow}  data={studentsData}/>
          {/* bottom */}
          
-         <Pagination />
+         <Pagination   totalPages={totalPages} page={p}/>
     </div>
   )
 }

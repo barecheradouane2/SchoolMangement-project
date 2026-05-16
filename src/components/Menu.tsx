@@ -33,25 +33,25 @@ const menuItems = [
       {
         icon: "/subject.png",
         label: "Subjects",
-        href: "/subjects",
+        href: "/list/subject",
         visible: ["admin"],
       },
       {
         icon: "/class.png",
         label: "Classes",
-        href: "/classes",
+        href: "/list/class",
         visible: ["admin", "teacher"],
       },
       {
         icon: "/lesson.png",
         label: "Lessons",
-        href: "/lessons",
+        href: "/list/lesson",
         visible: ["admin", "teacher"],
       },
       {
         icon: "/exam.png",
         label: "Exams",
-        href: "/exams",
+        href: "/list/exam",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {

@@ -10,7 +10,7 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
 import FormModal from "@/components/FormModal";
-import { Class, Subject, Teacher } from "@prisma/client";
+import { Class, Teacher } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { useSearchParams } from "next/navigation";
 
@@ -23,7 +23,7 @@ import { count } from "console";
 
 
 
-const TeacherListPage =  async ({
+const ClassListPage =  async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
@@ -31,34 +31,24 @@ const TeacherListPage =  async ({
 
     const columns =[
         {
-           header :"Info",
-           accessor:"info"
+           header :"Class Name",
+           accessor:"className"
         },
         {
-             header :"Teacher ID",
-           accessor:"teacherId",
+             header :"Capacity",
+           accessor:"capacity",
            className:"hidden md:table-cell"
 
 
         },
         {
-            header: "Subject",
-            accessor:"subject",
+            header: "Grade",
+            accessor:"grade",
             className:"hidden md:table-cell"
 
     },{
-          header: "Classes",
-            accessor:"classes",
-            className:"hidden md:table-cell"
-
-    },{
-          header: "Phone",
-            accessor:"phone",
-            className:"hidden md:table-cell"
-
-    },{
-          header: "Address",
-            accessor:"address",
+          header: "Supervisor",
+            accessor:"supervisor",
             className:"hidden md:table-cell"
 
     },{
@@ -71,27 +61,19 @@ const TeacherListPage =  async ({
 
    
 
-    type TeacherType=  Teacher  & {subjects:Subject []} & {classes :Class []}
+    type ClassType=  Class  ;
 
   
 
-    const renderRow =(item :TeacherType) =>(
+    const renderRow =(item :ClassType) =>(
         <tr key={item.id} className="py-4 even:bg-slate-100 hover:bg-lamaPurple hover:cursor-pointer">
-            <td className=" flex items-center gap-4 py-1">
-                 <Image src={item.img || "/noAvatar.png"} alt="photo"  className=" hidden w-8 h-8 md:flex rounded-full" width={14} height={14} />
-
-                 <div className="flex flex-col " >
-                    <p className="font-semibold text-sm ">{item.name}</p>
-                    <p className="text-xs">{item.email}</p>
-
-                 </div>
-            </td>
             
-            <td className="hidden md:table-cell text-sm">{item.username}</td>
-            <td className="hidden md:table-cell text-sm">{item.subjects.map(j => j.name).join(",")}</td>
-            <td className="hidden md:table-cell text-sm">{item.classes.map(c => c.name).join(", ")}</td>
-            <td className="hidden md:table-cell text-sm">{item.phone}</td>
-            <td className="hidden md:table-cell text-sm">{item.address}</td>
+            
+            <td className="hidden md:table-cell text-sm">{item.name}</td>
+            <td className="hidden md:table-cell text-sm">{item.capacity}</td>
+            <td className="hidden md:table-cell text-sm">{item.gradeId}</td>
+            <td className="hidden md:table-cell text-sm">{item.supervisorId}</td>
+           
             <td>{
                ( role=="admin") && (
                 <div className="flex items-center gap-2">
@@ -126,19 +108,9 @@ for (const [key, value] of Object.entries(queryParams)) {
 
   if(key==="name") {
     where.OR = [
-      { name: { contains: value, mode: "insensitive" } },
-      { email: { contains: value, mode: "insensitive" } },
-      { username: { contains: value, mode: "insensitive" } },
+      { name: { contains: value, mode: "insensitive" } }
     ];
   
-  }else if (key === "classid") {
-    where.classes = {
-      some: { id:  parseInt(value) }
-    };
-  } else if (key === "subjectid") {
-    where.subjects = {
-      some: { id:  parseInt(value) }
-    };
   } else {
     where[key] = value;
   }
@@ -153,21 +125,20 @@ for (const [key, value] of Object.entries(queryParams)) {
 
 
 
-const [teachersData,teachercount]= await prisma.$transaction([
-    prisma.teacher.findMany({
-        include: {
-            subjects: true,
-            classes: true,
-        },
+const [classData,classcount]= await prisma.$transaction([
+    prisma.class.findMany({
+       
+       
         where,
+
         take: pageSize ,
         skip: (p - 1) * pageSize,
        
     }),
-    prisma.teacher.count()
+    prisma.class.count()
 ])
 
-const totalPages = Math.ceil(teachercount / pageSize);
+const totalPages = Math.ceil(classcount / pageSize);
 
 
 
@@ -186,7 +157,7 @@ const totalPages = Math.ceil(teachercount / pageSize);
     <div className='bg-white m-4 p-4'>
         {/* top */}
         <div className="flex items-center justify-between">
-            <h1 className="font-semibold text-sm hidden md:flex">All Teachers</h1>
+            <h1 className="font-semibold text-sm hidden md:flex">All Classes</h1>
             <div className=" flex flex-col md:flex-row items-center gap-2">
                 <SearchTable />
 
@@ -209,7 +180,7 @@ const totalPages = Math.ceil(teachercount / pageSize);
             </div>
         </div>
          {/* table */}
-         <TableList columns={columns} renderRow={renderRow}  data={teachersData}/>
+         <TableList columns={columns} renderRow={renderRow}  data={classData}/>
          {/* bottom */}
          
          <Pagination  totalPages={totalPages} page={p}   />
@@ -217,4 +188,4 @@ const totalPages = Math.ceil(teachercount / pageSize);
   )
 }
 
-export default TeacherListPage
+export default ClassListPage
