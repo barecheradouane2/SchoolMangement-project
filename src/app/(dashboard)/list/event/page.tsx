@@ -10,7 +10,7 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
 import FormModal from "@/components/FormModal";
-import {  Subject ,Teacher} from "@prisma/client";
+import {  Class,Event} from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { useSearchParams } from "next/navigation";
 
@@ -23,20 +23,42 @@ import { count } from "console";
 
 
 
-const SubjectListPage =  async ({
+
+const EventListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
 
-    const columns =[
+        const columns =[
         {
-           header :"Subject Name",
-           accessor:"subjectName"
+           header :"Title",
+           accessor:"title"
         },
         {
-             header :"Teachers",
-           accessor:"teachers",
+             header :"Class",
+           accessor:"class",
+           className:"hidden md:table-cell"
+
+
+        },
+        {
+             header :"Date",
+           accessor:"date",
+           className:"hidden md:table-cell"
+
+
+        },
+        {
+             header :"Start Time",
+           accessor:"StartTime",
+           className:"hidden md:table-cell"
+
+
+        },
+        {
+             header :"End Time",
+           accessor:"EndTime",
            className:"hidden md:table-cell"
 
 
@@ -50,16 +72,34 @@ const SubjectListPage =  async ({
 
    
 
-    type SubjectType=  Subject  & {teachers:Teacher []} 
+    type EventType=  Event  & {class:Class} 
 
   
 
-    const renderRow =(item :SubjectType) =>(
+    const renderRow =(item :EventType) =>(
         <tr key={item.id} className="py-4 even:bg-slate-100 hover:bg-lamaPurple hover:cursor-pointer">
           
             
-            <td className="hidden md:table-cell text-sm">{item.name}</td>
-            <td className="hidden md:table-cell text-sm">{item.teachers.map(t => t.name).join(",")}</td>
+            <td className="hidden md:table-cell text-sm">{item.title}</td>
+            <td className="hidden md:table-cell text-sm">{item.class.name}</td>
+            <td className="hidden md:table-cell text-sm">{new Date(item.startTime).toISOString().split("T")[0]}</td>
+            <td className="hidden md:table-cell text-sm">  {new Date(item.startTime).toLocaleTimeString([], {
+               hour: "2-digit",
+              minute: "2-digit",
+                  hour12: true,
+                 })}</td>
+            <td className="hidden md:table-cell text-sm">
+
+               {new Date(item.endTime).toLocaleTimeString([], {
+                  hour: "2-digit",
+                 minute: "2-digit",
+                    hour12: true,
+                 })}
+
+
+
+
+            </td>
            
             <td>{
                ( role=="admin") && (
@@ -95,7 +135,7 @@ for (const [key, value] of Object.entries(queryParams)) {
 
   if(key==="search") {
     where.OR = [
-      { name: { contains: value, mode: "insensitive" } }
+      { title: { contains: value, mode: "insensitive" } }
     ];
   
   } else {
@@ -112,21 +152,20 @@ for (const [key, value] of Object.entries(queryParams)) {
 
 
 
-const [subjectsData,subjectcount]= await prisma.$transaction([
-    prisma.subject.findMany({
+const [eventData,eventcount]= await prisma.$transaction([
+    prisma.event.findMany({
         include: {
-            teachers: true,
+            class:{select:{name:true}}
         },
         where,
         take: pageSize ,
         skip: (p - 1) * pageSize,
        
     }),
-    prisma.subject.count()
+    prisma.event.count()
 ])
 
-const totalPages = Math.ceil(subjectcount / pageSize);
-
+const totalPages = Math.ceil(eventcount / pageSize);
 
 
 
@@ -144,7 +183,7 @@ const totalPages = Math.ceil(subjectcount / pageSize);
     <div className='bg-white m-4 p-4'>
         {/* top */}
         <div className="flex items-center justify-between">
-            <h1 className="font-semibold text-sm hidden md:flex">All Subjects</h1>
+            <h1 className="font-semibold text-sm hidden md:flex">All Assignments</h1>
             <div className=" flex flex-col md:flex-row items-center gap-2">
                 <SearchTable />
 
@@ -158,7 +197,7 @@ const totalPages = Math.ceil(subjectcount / pageSize);
 
                     </button>
                    
-                   <FormModal table="subject" type="create" />
+                   <FormModal table="event" type="create" />
                 
                   
 
@@ -167,7 +206,7 @@ const totalPages = Math.ceil(subjectcount / pageSize);
             </div>
         </div>
          {/* table */}
-         <TableList columns={columns} renderRow={renderRow}  data={subjectsData}/>
+         <TableList columns={columns} renderRow={renderRow}  data={eventData}/>
          {/* bottom */}
          
          <Pagination  totalPages={totalPages} page={p}   />
@@ -175,4 +214,4 @@ const totalPages = Math.ceil(subjectcount / pageSize);
   )
 }
 
-export default SubjectListPage
+export default EventListPage

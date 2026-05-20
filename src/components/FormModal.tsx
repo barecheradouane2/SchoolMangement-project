@@ -28,6 +28,7 @@ const FormModal = ({table,type,data,id}:{
         [key:string]:(type:"create" | "update", data?:any)=>JSX.Element;
     } = {
         teacher :(type,data) => <TeacherForm type={type} data={data} />
+        
       
     }
 

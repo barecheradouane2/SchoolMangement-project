@@ -3,6 +3,7 @@ import SearchTable from "@/components/SearchTable"
 import Image from "next/image";
 import  TableList from "@/components/TableList"
 import { role } from "@/lib/data";
+import FormModal from "@/components/FormModal";
 
 import {parentsData} from  "@/lib/data";
 
@@ -144,7 +145,7 @@ const totalPages = Math.ceil(parentcount / pageSize);
     <div className='bg-white m-4 p-4'>
         {/* top */}
         <div className="flex items-center justify-between">
-            <h1 className="font-semibold text-sm hidden md:flex">All Student</h1>
+            <h1 className="font-semibold text-sm hidden md:flex">All Patents</h1>
             <div className=" flex flex-col md:flex-row items-center gap-2">
                 <SearchTable />
 
@@ -157,10 +158,8 @@ const totalPages = Math.ceil(parentcount / pageSize);
                         <Image src="/sort.png" alt="logo" width={14} height={14} />
 
                     </button>
-                     <button className="bg-lamaYellow p-2 rounded-full flex items-center justify-between">
-                        <Image src="/plus.png" alt="logo" width={14} height={14} />
-
-                    </button>
+                   
+                    <FormModal table="parent" type="create" />
                
                   
 

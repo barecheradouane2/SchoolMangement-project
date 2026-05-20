@@ -8,3 +8,12 @@ const nextConfig = {
 };
 
 export default nextConfig;
+
+
+// const nextConfig = {
+//     images:{
+//         remotePatterns:[
+//             {hostname:"images.pexels.com"},
+//         ]
+//     },
+// };

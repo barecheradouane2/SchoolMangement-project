@@ -1,3 +1,4 @@
+
 import SearchTable from "@/components/SearchTable"
 
 import Image from "next/image";
@@ -10,56 +11,68 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
 import FormModal from "@/components/FormModal";
-import {  Subject ,Teacher} from "@prisma/client";
+import {Lesson, Class, Teacher ,Subject ,Assignment} from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { useSearchParams } from "next/navigation";
-
-
 
 import { pageSize } from "@/lib/settings";
 import { count } from "console";
 
-
-
-
-
-const SubjectListPage =  async ({
+const AssignmentLisst = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
 
-    const columns =[
-        {
-           header :"Subject Name",
-           accessor:"subjectName"
-        },
-        {
-             header :"Teachers",
-           accessor:"teachers",
-           className:"hidden md:table-cell"
-
-
+         const columns =[
+            {
+               header :"Subject Name",
+               accessor:"SubjectName"
+            },
+            {
+                 header :"Class",
+               accessor:"class",
+               className:"hidden md:table-cell"
+    
+    
+            },
+            {
+                header: "Teacher",
+                accessor:"teacher",
+                className:"hidden md:table-cell"
+    
         },{
-         header: "Action",
-            accessor:"action"
-           
-    }
+              header: "Due Date",
+                accessor:"duedate",
+                className:"hidden md:table-cell"
+    
+        },
+        
+        
+        {
+             header: "Action",
+                accessor:"action"
+               
+        }
+    
+        ]
+    
+     type AssignmentType = Assignment & {
+      lesson: Lesson & {
+        subject: Subject;
+        class: Class;
+        teacher: Teacher;
+      };
+    };
 
-    ]
-
-   
-
-    type SubjectType=  Subject  & {teachers:Teacher []} 
-
-  
-
-    const renderRow =(item :SubjectType) =>(
+      const renderRow =(item :AssignmentType) =>(
         <tr key={item.id} className="py-4 even:bg-slate-100 hover:bg-lamaPurple hover:cursor-pointer">
-          
             
-            <td className="hidden md:table-cell text-sm">{item.name}</td>
-            <td className="hidden md:table-cell text-sm">{item.teachers.map(t => t.name).join(",")}</td>
+            
+            <td className="hidden md:table-cell text-sm">{item.lesson.subject.name}</td>
+            <td className="hidden md:table-cell text-sm">{item.lesson.class.name}</td>
+            <td className="hidden md:table-cell text-sm">{item.lesson.teacher.name}</td>
+            <td className="hidden md:table-cell text-sm"> {new Date(item.dueDate).toISOString().split("T")[0]}</td>
            
             <td>{
                ( role=="admin") && (
@@ -88,17 +101,37 @@ const SubjectListPage =  async ({
 
 
 
- const where: any = {};
+const where: any = {};
 
 for (const [key, value] of Object.entries(queryParams)) {
   if (!value) continue;
 
-  if(key==="search") {
-    where.OR = [
-      { name: { contains: value, mode: "insensitive" } }
-    ];
-  
-  } else {
+  if (key === "teacherId") {
+    where.lesson = {
+      ...where.lesson,
+      teacherId: value,
+    };
+  }
+
+  else if (key === "subjectId") {
+    where.lesson = {
+      ...where.lesson,
+      subjectId: parseInt(value),
+    };
+  }
+
+  else if (key === "classId") {
+    where.lesson = {
+      ...where.lesson,
+      classId: parseInt(value),
+    };
+  }
+
+  else if (key === "lessonId") {
+    where.lessonId = parseInt(value);
+  }
+
+  else {
     where[key] = value;
   }
 }
@@ -111,32 +144,26 @@ for (const [key, value] of Object.entries(queryParams)) {
 
 
 
-
-const [subjectsData,subjectcount]= await prisma.$transaction([
-    prisma.subject.findMany({
+const [assignmentData, assignmentCount] = await prisma.$transaction([
+  prisma.assignment.findMany({
+    where,
+    include: {
+      lesson: {
         include: {
-            teachers: true,
+          subject: true,
+          teacher: true,
+          class: true,
         },
-        where,
-        take: pageSize ,
-        skip: (p - 1) * pageSize,
-       
-    }),
-    prisma.subject.count()
-])
+      },
+    },
+    take: pageSize,
+    skip: (p - 1) * pageSize,
+  }),
 
-const totalPages = Math.ceil(subjectcount / pageSize);
+  prisma.exam.count({ where }),
+]);
 
-
-
-
-
-
-
-
-
-
-
+const totalPages = Math.ceil(assignmentCount / pageSize);
 
 
 
@@ -144,7 +171,7 @@ const totalPages = Math.ceil(subjectcount / pageSize);
     <div className='bg-white m-4 p-4'>
         {/* top */}
         <div className="flex items-center justify-between">
-            <h1 className="font-semibold text-sm hidden md:flex">All Subjects</h1>
+            <h1 className="font-semibold text-sm hidden md:flex">All Assignments</h1>
             <div className=" flex flex-col md:flex-row items-center gap-2">
                 <SearchTable />
 
@@ -158,7 +185,7 @@ const totalPages = Math.ceil(subjectcount / pageSize);
 
                     </button>
                    
-                   <FormModal table="subject" type="create" />
+                   <FormModal table="assignment" type="create" />
                 
                   
 
@@ -167,7 +194,7 @@ const totalPages = Math.ceil(subjectcount / pageSize);
             </div>
         </div>
          {/* table */}
-         <TableList columns={columns} renderRow={renderRow}  data={subjectsData}/>
+         <TableList columns={columns} renderRow={renderRow}  data={assignmentData}/>
          {/* bottom */}
          
          <Pagination  totalPages={totalPages} page={p}   />
@@ -175,4 +202,4 @@ const totalPages = Math.ceil(subjectcount / pageSize);
   )
 }
 
-export default SubjectListPage
+export default AssignmentLisst

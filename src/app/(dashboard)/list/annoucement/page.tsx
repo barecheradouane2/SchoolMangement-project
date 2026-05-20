@@ -10,7 +10,7 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
 import FormModal from "@/components/FormModal";
-import {  Subject ,Teacher} from "@prisma/client";
+import {  Class,Announcement} from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { useSearchParams } from "next/navigation";
 
@@ -21,26 +21,34 @@ import { count } from "console";
 
 
 
-
-
-const SubjectListPage =  async ({
+const AnnoucementListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
 
-    const columns =[
+
+     const columns =[
         {
-           header :"Subject Name",
-           accessor:"subjectName"
+           header :"Title",
+           accessor:"title"
         },
         {
-             header :"Teachers",
-           accessor:"teachers",
+             header :"Class",
+           accessor:"class",
            className:"hidden md:table-cell"
 
 
-        },{
+        },
+        {
+             header :"Date",
+           accessor:"date",
+           className:"hidden md:table-cell"
+
+
+        },
+       
+       {
          header: "Action",
             accessor:"action"
            
@@ -50,16 +58,18 @@ const SubjectListPage =  async ({
 
    
 
-    type SubjectType=  Subject  & {teachers:Teacher []} 
+    type AnnouncementType=  Announcement  & {class:Class} 
 
   
 
-    const renderRow =(item :SubjectType) =>(
+    const renderRow =(item :AnnouncementType) =>(
         <tr key={item.id} className="py-4 even:bg-slate-100 hover:bg-lamaPurple hover:cursor-pointer">
           
             
-            <td className="hidden md:table-cell text-sm">{item.name}</td>
-            <td className="hidden md:table-cell text-sm">{item.teachers.map(t => t.name).join(",")}</td>
+            <td className="hidden md:table-cell text-sm">{item.title}</td>
+            <td className="hidden md:table-cell text-sm">{item.class.name}</td>
+            <td className="hidden md:table-cell text-sm">{new Date(item.date).toISOString().split("T")[0]}</td>
+           
            
             <td>{
                ( role=="admin") && (
@@ -95,11 +105,13 @@ for (const [key, value] of Object.entries(queryParams)) {
 
   if(key==="search") {
     where.OR = [
-      { name: { contains: value, mode: "insensitive" } }
+      { title: { contains: value, mode: "insensitive" } }
     ];
   
-  } else {
-    where[key] = value;
+  } else if(key=="classId") {
+
+    where.classId = value;
+       
   }
 }
 
@@ -112,28 +124,20 @@ for (const [key, value] of Object.entries(queryParams)) {
 
 
 
-const [subjectsData,subjectcount]= await prisma.$transaction([
-    prisma.subject.findMany({
+const [announcementData,announcementcount]= await prisma.$transaction([
+    prisma.announcement.findMany({
         include: {
-            teachers: true,
+            class:{select:{name:true}}
         },
         where,
         take: pageSize ,
         skip: (p - 1) * pageSize,
        
     }),
-    prisma.subject.count()
+    prisma.announcement.count()
 ])
 
-const totalPages = Math.ceil(subjectcount / pageSize);
-
-
-
-
-
-
-
-
+const totalPages = Math.ceil(announcementcount / pageSize);
 
 
 
@@ -141,10 +145,10 @@ const totalPages = Math.ceil(subjectcount / pageSize);
 
 
   return (
-    <div className='bg-white m-4 p-4'>
+     <div className='bg-white m-4 p-4'>
         {/* top */}
         <div className="flex items-center justify-between">
-            <h1 className="font-semibold text-sm hidden md:flex">All Subjects</h1>
+            <h1 className="font-semibold text-sm hidden md:flex">All Announcement</h1>
             <div className=" flex flex-col md:flex-row items-center gap-2">
                 <SearchTable />
 
@@ -158,7 +162,7 @@ const totalPages = Math.ceil(subjectcount / pageSize);
 
                     </button>
                    
-                   <FormModal table="subject" type="create" />
+                   <FormModal table="annoucement" type="create" />
                 
                   
 
@@ -167,7 +171,7 @@ const totalPages = Math.ceil(subjectcount / pageSize);
             </div>
         </div>
          {/* table */}
-         <TableList columns={columns} renderRow={renderRow}  data={subjectsData}/>
+         <TableList columns={columns} renderRow={renderRow}  data={announcementData}/>
          {/* bottom */}
          
          <Pagination  totalPages={totalPages} page={p}   />
@@ -175,4 +179,4 @@ const totalPages = Math.ceil(subjectcount / pageSize);
   )
 }
 
-export default SubjectListPage
+export default  AnnoucementListPage 

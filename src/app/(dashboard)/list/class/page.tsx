@@ -171,7 +171,7 @@ const totalPages = Math.ceil(classcount / pageSize);
 
                     </button>
                    
-                   <FormModal table="teacher" type="create" />
+                   <FormModal table="class" type="create" />
                 
                   
 

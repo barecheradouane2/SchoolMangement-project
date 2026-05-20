@@ -5,6 +5,7 @@ import  TableList from "@/components/TableList"
 import { role } from "@/lib/data";
 
 import {studentsData} from  "@/lib/data";
+import FormModal from "@/components/FormModal";
 
 import { Student } from "@prisma/client";
 
@@ -173,10 +174,8 @@ const totalPages = Math.ceil(studentcount / pageSize);
                         <Image src="/sort.png" alt="logo" width={14} height={14} />
 
                     </button>
-                     <button className="bg-lamaYellow p-2 rounded-full flex items-center justify-between">
-                        <Image src="/plus.png" alt="logo" width={14} height={14} />
-
-                    </button>
+                   
+                    <FormModal table="student" type="create" />
                
                   
 

@@ -57,13 +57,13 @@ const menuItems = [
       {
         icon: "/assignment.png",
         label: "Assignments",
-        href: "/assignments",
+        href: "/list/assignment",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
         icon: "/result.png",
         label: "Results",
-        href: "/results",
+        href: "/list/result",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
@@ -75,7 +75,7 @@ const menuItems = [
       {
         icon: "/calendar.png",
         label: "Events",
-        href: "/events",
+        href: "/list/event",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
