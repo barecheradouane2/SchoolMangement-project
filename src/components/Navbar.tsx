@@ -1,4 +1,6 @@
 import Image from "next/image";
+import {  UserButton } from '@clerk/nextjs'
+
 const Navbar = () => {
   return (
     <div className='flex justify-between items-center p-4'>
@@ -32,7 +34,17 @@ const Navbar = () => {
 
         </div>
 
-        <Image src="/avatar.png"  alt="avatar" className="rounded-full" width={36} height={36} />
+        {/* <Image src="/avatar.png"  alt="avatar" className="rounded-full" width={36} height={36} /> */}
+
+           
+              <UserButton />
+       
+
+
+
+
+
+
 
       </div>
 

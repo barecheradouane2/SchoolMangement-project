@@ -40,7 +40,7 @@ const Calender = () => {
   return (
    <div className='bg-white p-4  flex flex-col gap-4 rounded-md' >
       <div className='flex justify-center items-center w-full'>
-       <Calendar onChange={onChange} value={value} />
+       <Calendar locale="en-US" onChange={onChange} value={value} />
       </div>
       <div className=' flex flex-col gap-2'>
         <div className='flex justify-between'>
