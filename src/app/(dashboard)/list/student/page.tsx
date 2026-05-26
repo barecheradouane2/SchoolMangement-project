@@ -2,7 +2,7 @@ import SearchTable from "@/components/SearchTable"
 
 import Image from "next/image";
 import  TableList from "@/components/TableList"
-import { role } from "@/lib/data";
+
 
 import {studentsData} from  "@/lib/data";
 import FormModal from "@/components/FormModal";
@@ -14,6 +14,7 @@ import Pagination from "@/components/Pagination";
 
 import prisma from "@/lib/prisma";
 import { pageSize } from "@/lib/settings";
+import { role } from "@/lib/util";
 
 const StudentListPage = async ({
   searchParams,
@@ -47,11 +48,13 @@ const StudentListPage = async ({
             accessor:"address",
             className:"hidden md:table-cell"
 
-    },{
-         header: "Action",
-            accessor:"action"
-           
-    }
+    },
+                   
+          ... (role==='admin' ?[{
+               header: "Action",
+              accessor:"action"
+                       
+          }] :[])
 
     ]
     type Student ={

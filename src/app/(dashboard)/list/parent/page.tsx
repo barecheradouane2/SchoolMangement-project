@@ -14,6 +14,7 @@ import Pagination from "@/components/Pagination";
 
 import prisma from "@/lib/prisma";
 import { pageSize } from "@/lib/settings";
+import { currentUserId } from "@/lib/util";
 
 const ParentListPage = async ({
   searchParams,
@@ -42,11 +43,13 @@ const ParentListPage = async ({
                 accessor:"address",
                 className:"hidden md:table-cell"
     
-        },{
-             header: "Action",
-                accessor:"action"
-               
-        }
+        },
+                   
+          ... (role==='admin' ?[{
+               header: "Action",
+              accessor:"action"
+                       
+          }] :[])
     
         ]
         type ParentType = Parent  & {students:Student []};
@@ -116,6 +119,7 @@ for (const [key, value] of Object.entries(queryParams)) {
   
 
   const  p = page ? parseInt(page) : 1;
+
 
 
 

@@ -35,6 +35,7 @@ model Student {
   birthday    DateTime
 }
 
+
 model Teacher {
   id        String    @id
   username  String    @unique

@@ -2,7 +2,7 @@ import SearchTable from "@/components/SearchTable"
 
 import Image from "next/image";
 import  TableList from "@/components/TableList"
-import { role } from "@/lib/data";
+
 
 // import {teachersData} from  "@/lib/data";
 
@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 
 import { pageSize } from "@/lib/settings";
 import { count } from "console";
+import { currentUserId, role } from "@/lib/util";
 
 
 
@@ -48,11 +49,11 @@ const AnnoucementListPage = async ({
 
         },
        
-       {
+     ... (role==='admin' ?[{
          header: "Action",
             accessor:"action"
            
-    }
+       }] :[])
 
     ]
 
@@ -67,7 +68,7 @@ const AnnoucementListPage = async ({
           
             
             <td className="hidden md:table-cell text-sm">{item.title}</td>
-            <td className="hidden md:table-cell text-sm">{item.class.name}</td>
+            <td className="hidden md:table-cell text-sm">{item.class.name || "-"}</td>
             <td className="hidden md:table-cell text-sm">{new Date(item.date).toISOString().split("T")[0]}</td>
            
            
@@ -120,6 +121,41 @@ for (const [key, value] of Object.entries(queryParams)) {
   
 
   const  p = page ? parseInt(page) : 1;
+
+    const roleCondition ={
+      teacher: {
+        lessons :{
+          some:{
+            teacherId :currentUserId!
+  
+        }
+      }
+      },
+      student: {
+        students:{
+          some:{
+            Id :currentUserId!
+            }
+          }
+  
+      }
+      ,
+      parent: {
+        students:{
+          some:{
+            parentId :currentUserId!
+            }
+          }
+      }
+  
+  }
+  
+  where.OR = [
+    {classId:null},
+    {
+      class: roleCondition[role as keyof typeof roleCondition] || {}
+    }
+  ]
 
 
 

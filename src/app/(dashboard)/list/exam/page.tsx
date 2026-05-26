@@ -3,7 +3,7 @@ import SearchTable from "@/components/SearchTable"
 
 import Image from "next/image";
 import  TableList from "@/components/TableList"
-import { role } from "@/lib/data";
+
 
 // import {teachersData} from  "@/lib/data";
 
@@ -17,6 +17,7 @@ import { useSearchParams } from "next/navigation";
 
 import { pageSize } from "@/lib/settings";
 import { count } from "console";
+import { currentUserId, role } from "@/lib/util";
 
 
 
@@ -50,13 +51,12 @@ const ExamListPage = async ({
             className:"hidden md:table-cell"
 
     },
-    
-    
-    {
-         header: "Action",
-            accessor:"action"
-           
-    }
+                   
+          ... ((role==='admin' || role==='teacher') ?[{
+               header: "Action",
+              accessor:"action"
+                       
+          }] :[])
 
     ]
 
@@ -80,7 +80,7 @@ const ExamListPage = async ({
             <td className="hidden md:table-cell text-sm"> {new Date(item.startTime).toISOString().split("T")[0]}</td>
            
             <td>{
-               ( role=="admin") && (
+               ( role==="admin" || role==="teacher") && (
                 <div className="flex items-center gap-2">
                     <Link href={`/list/teacher/${item.id}`}>
                     <button className="rounded-full w-7 h-7 bg-lamaSky flex items-center justify-between p-2">
@@ -108,46 +108,74 @@ const ExamListPage = async ({
 
 const where: any = {};
 
+
+
+where.lesson = {};
+
+
 for (const [key, value] of Object.entries(queryParams)) {
   if (!value) continue;
 
   if (key === "teacherId") {
-    where.lesson = {
-      ...where.lesson,
-      teacherId: value,
-    };
-  }
-
-  else if (key === "subjectId") {
-    where.lesson = {
-      ...where.lesson,
-      subjectId: parseInt(value),
-    };
+    where.lesson.teacherId = value;
   }
 
   else if (key === "classId") {
-    where.lesson = {
-      ...where.lesson,
-      classId: parseInt(value),
+    where.lesson.classId = parseInt(value);
+  }
+
+  else if (key==="search") {
+    where.lesson.subject = {
+      name: {
+        contains: value,
+        mode: "insensitive",
+      },
     };
-  }
-
-  else if (key === "lessonId") {
-    where.lessonId = parseInt(value);
-  }
-
-  else {
-    where[key] = value;
   }
 }
 
-  
-
-  
 
   const  p = page ? parseInt(page) : 1;
 
+   switch (role) {
+    case "teacher":
+       where.lesson.teacherId = currentUserId!;
+      break;
+    case "student":
+       where.lesson.class = {
+       
+            students :{
+              some:{
+                id :currentUserId!
+              }
+            }
+          
+    };
+       
+  
+      break;
+      case "parent" :
+  
+      where.lesson.class =
+      {
+            students :{
+              some:{
+                parentId :currentUserId!
+              }
+            }
+      }
+    
 
+  
+  
+  
+  
+  
+      break;
+    // admin can see all
+  }
+
+  
 
 const [examData, examCount] = await prisma.$transaction([
   prisma.exam.findMany({

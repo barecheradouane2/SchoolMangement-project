@@ -3,7 +3,7 @@ import SearchTable from "@/components/SearchTable"
 
 import Image from "next/image";
 import  TableList from "@/components/TableList"
-import { role } from "@/lib/data";
+
 
 // import {teachersData} from  "@/lib/data";
 
@@ -11,12 +11,15 @@ import Link from "next/link";
 import Pagination from "@/components/Pagination";
 
 import FormModal from "@/components/FormModal";
-import {Lesson, Class, Teacher ,Subject ,Assignment} from "@prisma/client";
+ import {Lesson, Class, Teacher ,Subject ,Assignment} from "@prisma/client";
+
+
 import prisma from "@/lib/prisma";
 import { useSearchParams } from "next/navigation";
 
 import { pageSize } from "@/lib/settings";
 import { count } from "console";
+import { currentUserId, role } from "@/lib/util";
 
 const AssignmentLisst = async ({
   searchParams,
@@ -47,13 +50,12 @@ const AssignmentLisst = async ({
                 className:"hidden md:table-cell"
     
         },
-        
-        
-        {
-             header: "Action",
-                accessor:"action"
-               
-        }
+       
+     ... ((role==='admin' || role==='teacher')  ?[{
+         header: "Action",
+            accessor:"action"
+           
+       }] :[])
     
         ]
     
@@ -75,7 +77,7 @@ const AssignmentLisst = async ({
             <td className="hidden md:table-cell text-sm"> {new Date(item.dueDate).toISOString().split("T")[0]}</td>
            
             <td>{
-               ( role=="admin") && (
+               ( role=="admin" || role=="teacher") && (
                 <div className="flex items-center gap-2">
                     <Link href={`/list/teacher/${item.id}`}>
                     <button className="rounded-full w-7 h-7 bg-lamaSky flex items-center justify-between p-2">
@@ -135,6 +137,45 @@ for (const [key, value] of Object.entries(queryParams)) {
     where[key] = value;
   }
 }
+
+// chekc role teacher can only see his own assignment 
+
+switch (role) {
+  case "teacher":
+     where.lesson = { teacherId: currentUserId };
+    break;
+  case "student":
+     where.lesson = {
+    class: {
+      students: {
+        some: {
+          id: currentUserId!,
+        },
+      },
+    },
+  };
+     
+
+    break;
+    case "parent" :
+
+    where.lesson = {
+    class: {
+      students: {
+        some: {
+          parentId: currentUserId!,
+        },
+      },
+    },
+  };
+
+
+
+
+    break;
+  // admin can see all
+}
+
 
   
 

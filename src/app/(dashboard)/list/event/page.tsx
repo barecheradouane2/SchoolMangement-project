@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 
 import { pageSize } from "@/lib/settings";
 import { count } from "console";
+import { currentUserId } from "@/lib/util";
 
 
 
@@ -62,11 +63,13 @@ const EventListPage = async ({
            className:"hidden md:table-cell"
 
 
-        },{
-         header: "Action",
-            accessor:"action"
-           
-    }
+        },
+                   
+          ... (role==='admin' ?[{
+               header: "Action",
+              accessor:"action"
+                       
+          }] :[])
 
     ]
 
@@ -81,7 +84,7 @@ const EventListPage = async ({
           
             
             <td className="hidden md:table-cell text-sm">{item.title}</td>
-            <td className="hidden md:table-cell text-sm">{item.class.name}</td>
+            <td className="hidden md:table-cell text-sm">{item.class.name  || "-"}</td>
             <td className="hidden md:table-cell text-sm">{new Date(item.startTime).toISOString().split("T")[0]}</td>
             <td className="hidden md:table-cell text-sm">  {new Date(item.startTime).toLocaleTimeString([], {
                hour: "2-digit",
@@ -143,11 +146,49 @@ for (const [key, value] of Object.entries(queryParams)) {
   }
 }
 
+//role condition 
+
+
   
 
   
 
   const  p = page ? parseInt(page) : 1;
+
+  const roleCondition ={
+    teacher: {
+      lessons :{
+        some:{
+          teacherId :currentUserId!
+
+      }
+    }
+    },
+    student: {
+      students:{
+        some:{
+          Id :currentUserId!
+          }
+        }
+
+    }
+    ,
+    parent: {
+      students:{
+        some:{
+          parentId :currentUserId!
+          }
+        }
+    }
+
+}
+
+where.OR = [
+  {classId:null},
+  {
+    class: roleCondition[role as keyof typeof roleCondition] || {}
+  }
+]
 
 
 

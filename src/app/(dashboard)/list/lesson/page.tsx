@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 
 import { pageSize } from "@/lib/settings";
 import { count } from "console";
+import { currentUserId } from "@/lib/util";
 
 
 const Lessonlist = async ({
@@ -43,11 +44,13 @@ const Lessonlist = async ({
             accessor:"teacher",
             className:"hidden md:table-cell"
 
-    },{
-         header: "Action",
-            accessor:"action"
-           
-    }
+    },
+                   
+          ... (role==='admin' ?[{
+               header: "Action",
+              accessor:"action"
+                       
+          }] :[])
 
     ]
 
@@ -119,6 +122,45 @@ for (const [key, value] of Object.entries(queryParams)) {
   
 
   const  p = page ? parseInt(page) : 1;
+
+
+    // switch (role) {
+    //   case "teacher":
+    //      where.teacherId = currentUserId!;
+    //     break;
+    //   case "student":
+    //      where.class = {
+         
+    //           students :{
+    //             some:{
+    //               id :currentUserId!
+    //             }
+    //           }
+            
+    //   };
+         
+    
+    //     break;
+    //     case "parent" :
+    
+    //     where.class =
+    //     {
+    //           students :{
+    //             some:{
+    //               parentId :currentUserId!
+    //             }
+    //           }
+    //     }
+      
+  
+    
+    
+    
+    
+    
+    //     break;
+    //   // admin can see all
+    // }
 
 
 

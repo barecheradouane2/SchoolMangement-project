@@ -2,7 +2,7 @@ import SearchTable from "@/components/SearchTable"
 
 import Image from "next/image";
 import  TableList from "@/components/TableList"
-import { role } from "@/lib/data";
+
 
 // import {teachersData} from  "@/lib/data";
 
@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 
 import { pageSize } from "@/lib/settings";
 import { count } from "console";
+import { role } from "@/lib/util";
 
 
 
@@ -51,11 +52,13 @@ const ClassListPage =  async ({
             accessor:"supervisor",
             className:"hidden md:table-cell"
 
-    },{
-         header: "Action",
-            accessor:"action"
+    },
            
-    }
+         ... (role==='admin' ?[{
+             header: "Action",
+                accessor:"action"
+               
+           }] :[])
 
     ]
 

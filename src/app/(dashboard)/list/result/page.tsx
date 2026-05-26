@@ -3,7 +3,7 @@ import SearchTable from "@/components/SearchTable"
 
 import Image from "next/image";
 import  TableList from "@/components/TableList"
-import { role } from "@/lib/data";
+
 
 // import {teachersData} from  "@/lib/data";
 
@@ -17,6 +17,7 @@ import { useSearchParams } from "next/navigation";
 
 import { pageSize } from "@/lib/settings";
 import { count } from "console";
+import { currentUserId, role } from "@/lib/util";
 
 
 const ResultListpage = async ({
@@ -61,13 +62,12 @@ const ResultListpage = async ({
                 className:"hidden md:table-cell"
     
         },
-        
-        
-        {
-             header: "Action",
-                accessor:"action"
-               
-        }
+                   
+                 ... ((role==='admin' || role=='teacher') ?[{
+                     header: "Action",
+                        accessor:"action"
+                       
+                   }] :[])
     
         ]
     
@@ -168,6 +168,33 @@ for (const [key, value] of Object.entries(queryParams)) {
   
 
   const  p = page ? parseInt(page) : 1;
+
+
+
+  // ROLE CONDITIONS
+
+  switch (role) {
+    case "admin":
+      break;
+    case "teacher":
+      where.OR = [
+        { exam: { lesson: { teacherId: currentUserId! } } },
+        { assignment: { lesson: { teacherId: currentUserId! } } },
+      ];
+      break;
+
+    case "student":
+      where.studentId = currentUserId!;
+      break;
+
+    case "parent":
+      where.student = {
+        parentId: currentUserId!,
+      };
+      break;
+    default:
+      break;
+  }
 
 
 
