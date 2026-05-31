@@ -1,14 +1,17 @@
 import React from 'react'
 import UserCard from '@/components/UserCard'
 
-import CountRedicalBarChart from '@/components/CountRedicalBarChart'
-import AttandanceChart from '@/components/AttandanceChart'
+
 import FinanceChart from '@/components/FinanceChart'
 import Calender from '@/components/Calender'
 import Announcement from "@/components/Announcement"
+import CountContainerRedicalBarChart from '@/components/CountContainerRedicalBarChart'
+import AttandanceContainerChart from '@/components/AttandanceContainerChart'
 
 
 export default function AdminPage() {
+
+
   return (
     <div className='p-4 flex flex-col md:flex-row  gap-4 justify-between '>
       {/* left */}
@@ -18,7 +21,7 @@ export default function AdminPage() {
         <UserCard type="Students" />
         <UserCard type="Teachers" />
         <UserCard type="Parents" />
-        <UserCard type="Staffs" />
+        <UserCard type="Admins" />
 
       </div>
 
@@ -26,13 +29,13 @@ export default function AdminPage() {
       <div className='flex   gap-4 flex-col md:flex-row'>
 
         {/* count chart */}
-        <CountRedicalBarChart />
+        <CountContainerRedicalBarChart />
 
        
 
          {/* attendance chart */}
          <div className=' w-full md:w-2/3 bg-white p-4 rounded-md'> 
-          <AttandanceChart />
+          <AttandanceContainerChart />
          </div>
           
 
